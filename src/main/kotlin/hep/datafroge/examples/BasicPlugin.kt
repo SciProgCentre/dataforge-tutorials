@@ -40,6 +40,17 @@ class BasicPlugin: WorkspacePlugin(){
         }
     }
 
+    val sumOfFourth = task<Int>("sum"){
+        model {
+            dependsOn(fourth) // Get output of square task, as input in this task
+        }
+        reduce<Int> {
+            data ->
+            context.logger.info { "Reduce says: \"I get a ${data::class} with data\""}
+            data.values.sum()
+        }
+    }
+
     // Some boilerplate code
     override val tag: PluginTag = Companion.tag
     companion object : PluginFactory<BasicPlugin> {
@@ -49,7 +60,7 @@ class BasicPlugin: WorkspacePlugin(){
         override fun invoke(meta: Meta, context: Context): BasicPlugin =
             BasicPlugin(meta)
 
-        // Name of our pligun, this name be used for plugin search
+        // Name of our plugin, this name be used for plugin search
         override val tag: PluginTag = PluginTag("Basic")
     }
 }
@@ -70,4 +81,7 @@ fun main(){
     // Run task from plugin use format "PluginName.TaskName"
     val result = workspace.run("Basic.quaver")
     val firstValue = result.first()?.get()
+
+    val resultOfSum = workspace.run("Basic.sum")
+    resultOfSum.first()?.get()
 }
