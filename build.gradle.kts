@@ -12,6 +12,7 @@ repositories {
     // Use jcenter for resolving dependencies.
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
+    mavenCentral()
     maven(url = "https://kotlin.bintray.com/kotlinx" )
     maven("https://dl.bintray.com/mipt-npm/dataforge")
 }
@@ -28,6 +29,9 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-io-jvm:0.1.15")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.13.0")
+
+
+    compile("org.apache.commons:commons-math3:3.6.1")
 }
 
 val compileKotlin: KotlinCompile by tasks

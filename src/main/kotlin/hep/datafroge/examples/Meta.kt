@@ -8,6 +8,7 @@ import hep.dataforge.data.get
 import hep.dataforge.data.static
 import hep.dataforge.meta.*
 import hep.dataforge.workspace.*
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import kotlin.reflect.KClass
 
 
@@ -102,13 +103,25 @@ fun main(){
     val firstValue = result.first()?.get()
 
 
+    // Build meta, for "y" will be used default value
     val meta = buildMeta{
-        "parabolla" put {
-            "a" put 10
-            "c" put 20
+        "vector" put {
+            "x" put 10
+            "z" put 20
         }
     }
 
-
-
+    // Use user extension for meta
+    println(meta["vector"].vector3d)
 }
+
+
+// User extension for Vector3D
+val MetaItem<*>?.vector3d
+    get() = this?.let{
+        Vector3D(
+            this.node["x"].double ?: 0.0,
+            this.node["y"].double ?: 0.0,
+            this.node["z"].double ?: 0.0
+    )
+    }
