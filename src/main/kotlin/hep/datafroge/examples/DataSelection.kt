@@ -24,35 +24,48 @@ class DataSelectionPlugin: WorkspacePlugin(){
         }
     }
 
-    val fourth = task<Int>("fourth") {
+    val anotherSquare = task<Int>("anotherSquare") {
         model {
             //Get one item
             data(pattern = "anotherData\\[5\\]")
         }
         map<Int> { data ->
-            data * data * data * data
+            data * data
          }
     }
 
-    val quaver = task<Int>("quaver"){
-        model {
-            dependsOn(fourth) // Get output of square task, as input in this task
-        }
-        map<Int> { data ->
-            data * data
-        }
-    }
 
-    val sumOfFourth = task<Int>("sum"){
+    val groupSqure = task<Double>("group"){
         model {
             dependsOn(square)
         }
-        reduce<Int> {
-            data ->
-            context.logger.info { "Reduce says: \"I get a ${data::class} with data\""}
-            data.values.sum()
+        reduceByGroup<Int> {
+            env ->
+            group("even", filter = { name, _ ->
+                Regex("\\d{1,}").find(name.toString())!!.value.toInt() % 2 == 0 }) {
+                result { data ->
+                    env.context.logger.info { "Starting even" }
+                    data.values.average()
+                }
+            }
+            group("odd", filter = { name, _ -> Regex("\\d{1,}").find(name.toString())!!.value.toInt() % 2 == 1 }) {
+                result { data ->
+                    env.context.logger.info { "Starting odd" }
+                    data.values.average()
+                }
+            }
         }
     }
+
+    val delta = task<Double>("delta") {
+        model {
+            dependsOn(groupSqure)
+        }
+        reduce<Double> { data ->
+            data["even"]!! - data["odd"]!!
+        }
+    }
+
 
     // Some boilerplate code
     override val tag: PluginTag = Companion.tag
@@ -83,6 +96,9 @@ fun main(){
         }
     }
     // Run task from plugin use format "PluginName.TaskName"
-    val result = workspace.run("Basic.fourth")
-    result.items.map { it.value.data?.get() }
+    val result = workspace.run("Basic.delta")
+    result.items.map{it.value.data?.get()}
+
+    val anotherResult = workspace.run("Basic.anotherSquare")
+    result.first()?.get()
 }

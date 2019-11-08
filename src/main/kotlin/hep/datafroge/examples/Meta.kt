@@ -27,6 +27,7 @@ class BasicMetaPlugin: WorkspacePlugin(){
             allData()
         }
         map<Int>{
+            println(meta)
             val a = meta["a"].int ?: 1
             val b = meta["b"].int ?: 0
             a*it + b
@@ -49,9 +50,10 @@ class BasicMetaPlugin: WorkspacePlugin(){
     val square = task<Int>("square") {
         model {
             val type = meta["approx_type"].enum<AproxType>() ?: AproxType.linear
+            val innerMeta = buildMeta{ "inner" put "habrahabr" }
             when (type) {
                 AproxType.linear -> dependsOn(linear)
-                AproxType.parabolla -> dependsOn(parabolla)
+                AproxType.parabolla -> dependsOn(parabolla, meta = innerMeta)
             }
         }
         map<Int> { data ->
@@ -101,6 +103,18 @@ fun main(){
     }
 
     val firstValue = result.first()?.get()
+
+
+    // Run task with user meta
+    val resultParabolla = workspace.run("Basic.square"){
+        "approx_type" put AproxType.parabolla
+        "parabolla" put {
+            "a" put 10
+        }
+    }
+
+    val firstValueParabolla = resultParabolla.first()?.get()
+
 
 
     // Build meta, for "y" will be used default value
